@@ -3,6 +3,7 @@ name = "open3d-stubs"
 version = "0.1.0"
 description = ""
 authors = ["hisadome <hisadome@preferred.jp>"]
+packages = [{include = "open3d-stubs"}]
 readme = "README.md"
 
 [tool.poetry.dependencies]

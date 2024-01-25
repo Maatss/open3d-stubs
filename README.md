@@ -1,6 +1,11 @@
 # open3d-stubs
 
-Type stubs for Open3D, this work is working in progress. You can put this folder under `./typings` for [pyright](https://github.com/microsoft/pyright) to provide language features for Open3D
+Type stubs for Open3D, this work is working in progress.
+You can put this folder under `./typings` for [pyright](https://github.com/microsoft/pyright) to provide language features for Open3D.
+Or, just
+```bash
+pip install git+https://github.com/yoichiro0406/open3d-stubs.git
+```
 
 For Vim/Neovim users, check [coc-pyright](https://github.com/fannheyward/coc-pyright) for more information.
 
