@@ -6,16 +6,13 @@ import logging
 
 class LogRecord(logging.LogRecord):
     """Class for logging information."""
-    def getMessage(self): # -> str:
-        ...
-    
 
+    def getMessage(self): ...
 
-def get_runid(path): # -> str:
+def get_runid(path):  # -> str:
     """Get runid or an experiment."""
     ...
 
 def code2md(code_text, language=...):
     """Format code as markdown for display (eg in tensorboard)"""
     ...
-

@@ -1,2 +1,2 @@
-from .core import *
 from . import cuda
+from .core import *

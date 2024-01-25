@@ -1,8 +1,10 @@
 from enum import Enum
 from typing import overload
+
 from numpy import float64
 from numpy.typing import NDArray
-from .. import geometry, camera, utility
+
+from .. import camera, geometry, utility
 
 class TSDFVolumeColorType(Enum):
     Gray32 = ...

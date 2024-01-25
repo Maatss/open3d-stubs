@@ -1,5 +1,6 @@
 from enum import Enum
-from open3d import geometry, pipelines, camera, visualization
+
+from open3d import camera, geometry, pipelines, visualization
 
 def read_point_cloud(
     filename: str,

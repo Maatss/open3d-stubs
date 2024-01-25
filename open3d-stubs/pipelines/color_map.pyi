@@ -1,4 +1,4 @@
-from .. import geometry, camera
+from .. import camera, geometry
 
 class NonRigidOptimizerOption:
     def __init__(
@@ -34,7 +34,6 @@ def run_non_rigid_optimizer(
     arg2: camera.PinholeCameraTrajectory,
     arg3: NonRigidOptimizerOption,
 ) -> geometry.TriangleMesh: ...
-
 def run_rigid_optimizer(
     arg0: geometry.TriangleMesh,
     arg1: list[geometry.RGBDImage],

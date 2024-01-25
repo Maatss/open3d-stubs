@@ -1,10 +1,12 @@
-from typing import Callable, Optional, overload, Union, Any
 from enum import Enum
-from numpy import float32, float64
-from numpy.typing import NDArray, ArrayLike
+from typing import Any, Callable, Optional, Union, overload
+
 import open3d as o3d
-from .. import geometry, camera
-from . import rendering, gui
+from numpy import float32, float64
+from numpy.typing import ArrayLike, NDArray
+
+from .. import camera, geometry
+from . import gui, rendering
 
 class SelectedIndex:
     index: int
@@ -277,11 +279,13 @@ class O3DVisualizer(gui.Window):
         name: str
         time: float
         def __init__(self, *args, **kwargs) -> None: ...
+
     class Shader(Enum):
         DEPTH = ...
         NORMALS = ...
         STANDARD = ...
         UNLIT = ...
+
     class TickResult(Enum):
         NO_CHANGE = ...
         REDRAW = ...

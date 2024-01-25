@@ -1,1 +1,1 @@
-from . import registration, color_map, integration, odometry
+from . import color_map, integration, odometry, registration

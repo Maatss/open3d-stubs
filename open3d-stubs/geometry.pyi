@@ -1,9 +1,10 @@
 from enum import Enum
 from typing import Callable, overload
 
-from . import utility, camera, pipelines
-from numpy import float64, int32, array
+from numpy import array, float64, int32
 from numpy.typing import ArrayLike, NDArray
+
+from . import camera, pipelines, utility
 
 # pylint: skip-file
 

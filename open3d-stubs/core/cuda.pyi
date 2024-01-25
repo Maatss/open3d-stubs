@@ -1,4 +1,5 @@
 from typing import Optional
+
 from . import core
 
 def device_count() -> int: ...

@@ -1,8 +1,7 @@
-from typing import Iterable, Optional, Sequence, overload, Iterator, Union
 from enum import Enum
+from typing import Iterable, Iterator, Optional, Sequence, Union, overload
 
-from .. import core
-from .. import geometry
+from .. import core, geometry
 
 class Geometry:
     def __init__(self, *args, **kwargs) -> None: ...

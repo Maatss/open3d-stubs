@@ -1,6 +1,7 @@
 from numpy import float64
 from numpy.typing import NDArray
-from .. import geometry, camera, utility
+
+from .. import camera, geometry, utility
 
 class OdometryOption:
     iteration_number_per_pyramid_level: utility.IntVector
@@ -12,7 +13,7 @@ class OdometryOption:
         iteration_number_per_pyramid_level: utility.IntVector = ...,
         max_depth_diff: float = 0.03,
         min_depth: float = 0.0,
-        max_depth: float = 4.0
+        max_depth: float = 4.0,
     ) -> None: ...
 
 class RGBDOdometryJacobian:

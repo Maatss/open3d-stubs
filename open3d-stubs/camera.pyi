@@ -1,5 +1,6 @@
-from typing import overload
 from enum import Enum
+from typing import overload
+
 from numpy import float64
 from numpy.typing import NDArray
 

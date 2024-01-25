@@ -1,6 +1,8 @@
-from typing import overload, Iterable
+from typing import Iterable, overload
+
 from numpy import float64, int32
 from numpy.typing import NDArray
+
 from .. import geometry, utility
 
 class Feature:
