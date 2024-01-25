@@ -50,7 +50,7 @@ class ShapeNet(BaseDataset):
         """
         ...
     
-    def get_split_list(self, split): # -> List[Unknown]:
+    def get_split_list(self, split): # -> list[Unknown]:
         """Returns the list of data splits available.
 
         Args:

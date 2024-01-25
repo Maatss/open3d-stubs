@@ -1,4 +1,3 @@
-from typing import List
 from .. import geometry, camera
 
 class NonRigidOptimizerOption:
@@ -31,14 +30,14 @@ class RigidOptimizerOption:
 
 def run_non_rigid_optimizer(
     arg0: geometry.TriangleMesh,
-    arg1: List[geometry.RGBDImage],
+    arg1: list[geometry.RGBDImage],
     arg2: camera.PinholeCameraTrajectory,
     arg3: NonRigidOptimizerOption,
 ) -> geometry.TriangleMesh: ...
 
 def run_rigid_optimizer(
     arg0: geometry.TriangleMesh,
-    arg1: List[geometry.RGBDImage],
+    arg1: list[geometry.RGBDImage],
     arg2: camera.PinholeCameraTrajectory,
     arg3: RigidOptimizerOption,
 ) -> geometry.TriangleMesh: ...

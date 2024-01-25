@@ -103,7 +103,7 @@ class BEVBox3D(BoundingBox3D):
         """Convert data for evaluation:
 
         Args:
-            bboxes: List of BEVBox3D bboxes.
+            bboxes: list of BEVBox3D bboxes.
         """
         ...
     

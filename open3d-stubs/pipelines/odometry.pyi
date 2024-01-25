@@ -1,4 +1,3 @@
-from typing import Tuple
 from numpy import float64
 from numpy.typing import NDArray
 from .. import geometry, camera, utility
@@ -32,4 +31,4 @@ def compute_rgbd_odometry(
     odo_init: NDArray[float64] = ...,
     jacobian: RGBDOdometryJacobian = RGBDOdometryJacobianFromHybridTerm(),
     option: OdometryOption = ...,
-) -> Tuple[bool, NDArray[float64], NDArray[float64]]: ...
+) -> tuple[bool, NDArray[float64], NDArray[float64]]: ...

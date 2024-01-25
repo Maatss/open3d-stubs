@@ -1,4 +1,4 @@
-from typing import Callable, Optional, overload, List, Union, Dict, Any, Set
+from typing import Callable, Optional, overload, Union, Any
 from enum import Enum
 from numpy import float32, float64
 from numpy.typing import NDArray, ArrayLike
@@ -44,7 +44,7 @@ def draw(
 ) -> None: ...
 @overload
 def draw_geometries(
-    geometry_list: List[geometry.Geometry],
+    geometry_list: list[geometry.Geometry],
     window_name: str = "Open3D",
     width: int = 1920,
     height: int = 1080,
@@ -56,7 +56,7 @@ def draw_geometries(
 ) -> None: ...
 @overload
 def draw_geometries(
-    geometry_list: List[geometry.Geometry],
+    geometry_list: list[geometry.Geometry],
     lookat: ArrayLike,
     up: ArrayLike,
     front: ArrayLike,
@@ -71,7 +71,7 @@ def draw_geometries(
     mesh_show_back_face: bool = False,
 ) -> None: ...
 def draw_geometries_with_animation_callback(
-    geometry_list: List[geometry.Geometry],
+    geometry_list: list[geometry.Geometry],
     callback_function: Callable[[Visualizer], bool],
     window_name: str = "Open3D",
     width: int = 1920,
@@ -80,7 +80,7 @@ def draw_geometries_with_animation_callback(
     top: int = 50,
 ) -> None: ...
 def draw_geometries_with_custom_animation(
-    geometry_list: List[geometry.Geometry],
+    geometry_list: list[geometry.Geometry],
     window_name: str = "Open3D",
     width: int = 1920,
     height: int = 1080,
@@ -89,7 +89,7 @@ def draw_geometries_with_custom_animation(
     optional_view_trajectory_json_file: str = "",
 ) -> None: ...
 def draw_geometries_with_editing(
-    geometry_list: List[geometry.Geometry],
+    geometry_list: list[geometry.Geometry],
     window_name: str = "Open3D",
     width: int = 1920,
     height: int = 1080,
@@ -97,8 +97,8 @@ def draw_geometries_with_editing(
     top: int = 50,
 ) -> None: ...
 def draw_geometries_with_key_callbacks(
-    geometry_list: List[geometry.Geometry],
-    key_to_callback: Dict[int, Callable[[Visualizer], bool]],
+    geometry_list: list[geometry.Geometry],
+    key_to_callback: dict[int, Callable[[Visualizer], bool]],
     window_name: str = "Open3D",
     width: int = 1920,
     height: int = 1080,
@@ -106,7 +106,7 @@ def draw_geometries_with_key_callbacks(
     top: int = 50,
 ) -> None: ...
 def draw_geometries_with_vertex_selection(
-    geometry_list: List[geometry.Geometry],
+    geometry_list: list[geometry.Geometry],
     window_name: str = "Open3D",
     width: int = 1920,
     height: int = 1080,
@@ -250,7 +250,7 @@ class VisualizerWithEditing(Visualizer):
     def __init__(
         self, voxel_size: float = -1.0, use_dialog: bool = True, directory: str = ""
     ) -> None: ...
-    def get_picked_points(self) -> List[int]: ...
+    def get_picked_points(self) -> list[int]: ...
 
 class VisualizerWithKeyCallback(Visualizer):
     def __init__(self) -> None: ...
@@ -264,7 +264,7 @@ class VisualizerWithKeyCallback(Visualizer):
 class VisualizerWithVertexSelection(Visualizer):
     def __init__(self) -> None: ...
     def clear_picked_points(self) -> None: ...
-    def get_picked_points(self) -> List[PickedPoint]: ...
+    def get_picked_points(self) -> list[PickedPoint]: ...
     def register_selection_changed_callback(self, f: Callable[[], None]) -> None: ...
     def register_selection_moved_callback(self, f: Callable[[], None]) -> None: ...
     def register_selection_moving_callback(self, f: Callable[[], None]) -> None: ...
@@ -323,7 +323,7 @@ class O3DVisualizer(gui.Window):
         is_visible: bool = True,
     ) -> None: ...
     @overload
-    def add_geometry(self, d: Dict[str, Any]) -> None: ...
+    def add_geometry(self, d: dict[str, Any]) -> None: ...
     def clear_3d_labels(self) -> None: ...
     def close(self) -> None: ...
     def close_dialog(self) -> None: ...
@@ -331,7 +331,7 @@ class O3DVisualizer(gui.Window):
     def export_current_image(self, path: str) -> None: ...
     def get_geometry(self, name: str) -> DrawObject: ...
     def get_geometry_material(self, name: str) -> rendering.MaterialRecord: ...
-    def get_selection_sets(self) -> List[Dict[str, Set[SelectedIndex]]]: ...
+    def get_selection_sets(self) -> list[dict[str, set[SelectedIndex]]]: ...
     def modify_geometry_material(
         self, name: str, material: rendering.MaterialRecord
     ) -> None: ...

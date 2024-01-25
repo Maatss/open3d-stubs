@@ -11,12 +11,12 @@ def filter_data(data, labels, diffs=...): # -> tuple[dict[Unknown, Unknown], Unk
                 'difficulty': [...]  # if diffs not None
                 ...
             }
-        labels (number[]): List of labels which should be maintained.
-        difficulties (number[]): List of difficulties which should maintained.
+        labels (number[]): list of labels which should be maintained.
+        difficulties (number[]): list of difficulties which should maintained.
             (optional)
 
     Returns:
-        Tuple wit dictionary with same as format as input, with only the given labels
+        tuple wit dictionary with same as format as input, with only the given labels
         and difficulties and the indices.
     """
     ...
@@ -39,9 +39,9 @@ def precision_3d(pred, target, classes=..., difficulties=..., min_overlap=..., b
                 'difficulty': [...],
                 ...
             }
-        classes (number[]): List of classes which should be evaluated.
+        classes (number[]): list of classes which should be evaluated.
             Default is [0].
-        difficulties (number[]): List of difficulties which should evaluated.
+        difficulties (number[]): list of difficulties which should evaluated.
             Default is [0].
         min_overlap (number[]): Minimal overlap required to match bboxes.
             One entry for each class expected. Default is [0.5].
@@ -75,22 +75,22 @@ def mAP(pred, target, classes=..., difficulties=..., min_overlap=..., bev=..., s
     """Computes mAP of the given prediction (11-point interpolation).
 
     Args:
-        pred (dict): List of dictionaries with the prediction data (as numpy arrays).
+        pred (dict): list of dictionaries with the prediction data (as numpy arrays).
             {
                 'bbox':       [...],
                 'label':      [...],
                 'score':      [...],
                 'difficulty': [...]
             }[]
-        target (dict): List of dictionaries with the target data (as numpy arrays).
+        target (dict): list of dictionaries with the target data (as numpy arrays).
             {
                 'bbox':       [...],
                 'label':      [...],
                 'difficulty': [...]
             }[]
-        classes (number[]): List of classes which should be evaluated.
+        classes (number[]): list of classes which should be evaluated.
             Default is [0].
-        difficulties (number[]): List of difficulties which should evaluated.
+        difficulties (number[]): list of difficulties which should evaluated.
             Default is [0].
         min_overlap (number[]): Minimal overlap required to match bboxes.
             One entry for each class expected. Default is [0.5].

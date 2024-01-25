@@ -57,7 +57,7 @@ class Model:
         """Get the minimum and maximum for an attribute."""
         ...
     
-    def get_available_attrs(self, names): # -> List[Unknown]:
+    def get_available_attrs(self, names): # -> list[Unknown]:
         """Get a list of attributes based on the name."""
         ...
     

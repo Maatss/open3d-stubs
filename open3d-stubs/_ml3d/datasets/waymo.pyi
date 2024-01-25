@@ -77,7 +77,7 @@ class Waymo(BaseDataset):
         """
         ...
     
-    def get_split_list(self, split): # -> List[str] | List[Unknown]:
+    def get_split_list(self, split): # -> list[str] | list[Unknown]:
         """Returns the list of data splits available.
 
         Args:

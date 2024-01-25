@@ -11,7 +11,7 @@ def trans_augment(points, t_augment):
     """Implementation of an augmentation transform for point clouds."""
     ...
 
-def trans_crop_pc(points, feat, labels, search_tree, pick_idx, num_points): # -> tuple[Unknown, Unknown | None, Unknown, List[Any] | Unknown]:
+def trans_crop_pc(points, feat, labels, search_tree, pick_idx, num_points): # -> tuple[Unknown, Unknown | None, Unknown, list[Any] | Unknown]:
     ...
 
 def in_range_bev(box_range, box):

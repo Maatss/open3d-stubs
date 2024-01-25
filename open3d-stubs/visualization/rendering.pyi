@@ -1,4 +1,3 @@
-from typing import Dict
 from numpy import float32
 from numpy.typing import NDArray
 from .. import geometry
@@ -20,8 +19,8 @@ class MaterialRecord:
     base_roughness: float
     clearcoat_img: geometry.Image
     clearcoat_roughness_img: geometry.Image
-    generic_imgs: Dict[str, geometry.Image]
-    generic_params: Dict[str, NDArray[float32]]
+    generic_imgs: dict[str, geometry.Image]
+    generic_params: dict[str, NDArray[float32]]
     gradient: Gradient
     ground_plane_axis: float
     has_alpha: bool

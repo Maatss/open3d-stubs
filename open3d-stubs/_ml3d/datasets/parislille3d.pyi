@@ -40,7 +40,7 @@ class ParisLille3D(BaseDataset):
     def get_split(self, split): # -> ParisLille3DSplit:
         ...
     
-    def get_split_list(self, split): # -> List[Any]:
+    def get_split_list(self, split): # -> list[Any]:
         """Returns a dataset split.
 
         Args:
