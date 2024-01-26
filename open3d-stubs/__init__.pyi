@@ -11,7 +11,7 @@ from pathlib import Path as _Path
 import open3d.ml
 from open3d._build_config import _build_config
 
-from . import camera, core, geometry, io, t, utility, visualization
+from . import camera, core, geometry, io, t, utility, visualization, pipelines
 
 if _build_config["BUILD_GUI"] and not (
     _find_library("c++abi") or _find_library("c++")
