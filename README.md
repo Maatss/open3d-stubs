@@ -16,7 +16,7 @@ For Vim/Neovim users, check [coc-pyright](https://github.com/fannheyward/coc-pyr
 - [ ] open3d.io
 - [ ] open3d.t
     - [ ] geometry
-    - [ ] io
+    - [X] io
     - [ ] pipelines
 - [ ] open3d.ml
 - [X] open3d.pipelines
@@ -25,6 +25,6 @@ For Vim/Neovim users, check [coc-pyright](https://github.com/fannheyward/coc-pyr
     - [X] odometry
     - [X] registration
 - [X] open3d.utility
-- [ ] open3d.visualization
-    - [ ] gui
-    - [ ] rendering
+- [X] open3d.visualization
+    - [X] gui
+    - [X] rendering
