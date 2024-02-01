@@ -99,7 +99,7 @@ class RGBDVideoReader:
         self,
         frame_path: str,
         start_time_us: int = 0,
-        end_time_us: int = 18446744073709551615
+        end_time_us: int = 2^64 - 1
     ) -> None:
         """Save synchronized and aligned individual frames to subfolders.
 
@@ -108,7 +108,7 @@ class RGBDVideoReader:
                 'color' and 'depth' here. The intrinsic camera calibration
                 for the color stream will be saved in 'intrinsic.json'
             start_time_us (int, optional, default=0): Start saving frames from this time (us)
-            end_time_us (int, optional, default=18446744073709551615): Save frames until this time (us)
+            end_time_us (int, optional, default=2^64 - 1): Save frames until this time (us)
         """
         ...
 
@@ -187,7 +187,7 @@ class RSBagReader:
             self,
             frame_path: str,
             start_time_us: int = 0,
-            end_time_us: int = 18446744073709551615
+            end_time_us: int = 2^64 - 1
     ) -> None:
         """Save synchronized and aligned individual frames to subfolders.
 
@@ -196,7 +196,7 @@ class RSBagReader:
                 'color' and 'depth' here. The intrinsic camera calibration
                 for the color stream will be saved in 'intrinsic.json'
             start_time_us (int, optional, default=0): Start saving frames from this time (us)
-            end_time_us (int, optional, default=18446744073709551615): (default video length)
+            end_time_us (int, optional, default=2^64 - 1): (default video length)
                 Save frames until this time (us)
         """
     
