@@ -1539,7 +1539,7 @@ class SceneWidget(Widget):
     center_of_rotation: np.ndarray[np.float32[3, 1]]
     """Current center of rotation (for ROTATE_CAMERA and ROTATE_CAMERA_SPHERE)
     Type: numpy.ndarray[numpy.float32[3, 1]]"""
-    scene: open3d.visualization.rendering.Scene
+    scene: open3d.visualization.rendering.Open3DScene
     """The rendering.Open3DScene that the SceneWidget renders"""
 
     def __init__(self) -> None:
