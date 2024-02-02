@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Callable, overload
+import sys
+from typing import Callable, Tuple, overload
 
 from numpy import array, float64, int32
 from numpy.typing import ArrayLike, NDArray
@@ -353,7 +354,7 @@ class MeshBase(Geometry3D):
     def compute_convex_hull(self) -> tuple[TriangleMesh, list[int]]: ...
     def has_vertex_colors(self) -> bool: ...
     def has_vertex_normals(self) -> bool: ...
-    def has_verteices(self) -> bool: ...
+    def has_vertices(self) -> bool: ...
     def normalize_normals(self) -> MeshBase: ...
 
 class TriangleMesh(MeshBase):
@@ -363,7 +364,26 @@ class TriangleMesh(MeshBase):
     triangle_normals: utility.Vector3dVector
     triangle_uvs: utility.Vector2dVector
     triangles: utility.Vector3iVector
-    def __init__(self, *args, **kwargs) -> None: ...
+
+    @overload
+    def __init__(self) -> None:
+        """Default constructor."""
+        ...
+
+    @overload
+    def __init__(self, other: TriangleMesh) -> None:
+        """Copy constructor."""
+        ...
+    
+    @overload
+    def __init__(
+        self,
+        vertices: utility.Vector3dVector,
+        triangles: utility.Vector3iVector,
+    ) -> None:
+        """Create a triangle mesh from vertices and triangle indices."""
+        ...
+
     def cluster_connected_triangles(
         self,
     ) -> tuple[utility.IntVector, list[int], utility.DoubleVector]: ...
@@ -412,6 +432,432 @@ class TriangleMesh(MeshBase):
         split: int = 4,
         create_uv_map: bool = False,
     ) -> TriangleMesh: ...
+
+    @classmethod
+    def create_from_oriented_bounding_box(
+        cls,
+        obox: OrientedBoundingBox,
+        scale: NDArray[float64] = array([1.0, 1.0, 1.0]),
+        create_uv_map: bool = False,
+    ) -> TriangleMesh:
+        """Factory function to create a solid oriented bounding box.
+        
+        Args:
+            obox (OrientedBoundingBox): OrientedBoundingBox object to create mesh of.
+            scale (NDArray[float64], optional, default=array([1.0, 1.0, 1.0])):
+                scale factor along each direction of OrientedBoundingBox
+            create_uv_map (bool, optional, default=False): Add default UV map to the mesh.
+        Returns:
+            TriangleMesh: Solid oriented bounding box.
+        """
+        ...
+    
+    @overload
+    @classmethod
+    def create_from_point_cloud_alpha_shape(
+        cls,
+        pcd: PointCloud,
+        alpha: float,
+    ) -> TriangleMesh:
+        """Alpha shapes are a generalization of the convex hull.
+        With decreasing alpha value the shape schrinks and creates cavities.
+        See Edelsbrunner and Muecke, “Three-Dimensional Alpha Shapes”, 1994.
+        
+        Args:
+            pcd (PointCloud): PointCloud from which the TriangleMesh surface is reconstructed.
+            alpha (float): Parameter to control the shape. A very big value will give a shape
+                close to the convex hull.
+        Returns:
+            TriangleMesh: Surface of the alpha shape.
+        """
+        ...
+    
+    @overload
+    @classmethod
+    def create_from_point_cloud_alpha_shape(
+        cls,
+        pcd: PointCloud,
+        alpha: float,
+        tetra_mesh: TetraMesh,
+        pt_map: list[int] = None,
+    ) -> TriangleMesh:
+        """Alpha shapes are a generalization of the convex hull.
+        With decreasing alpha value the shape shrinks and creates cavities.
+        See Edelsbrunner and Muecke, “Three-Dimensional Alpha Shapes”, 1994.
+        
+        Args:
+            pcd (PointCloud): PointCloud from which the TriangleMesh surface is reconstructed.
+            alpha (float): Parameter to control the shape. A very big value will give a shape
+                close to the convex hull.
+            tetra_mesh (TetraMesh): If not None, than uses this to construct the alpha shape.
+                Otherwise, TetraMesh is computed from pcd.
+            pt_map (list[int], optional, default=None): Optional map from tetra_mesh vertex indices
+                to pcd points.
+        Returns:
+            TriangleMesh: Surface of the alpha shape.
+        """
+
+    @classmethod
+    def create_from_point_cloud_ball_pivoting(
+        cls,
+        pcd: PointCloud,
+        radii: utility.DoubleVector,
+    ) -> TriangleMesh:
+        """Function that computes a triangle mesh from a oriented PointCloud.
+        This implements the Ball Pivoting algorithm proposed in F. Bernardini et al.,
+        “The ball-pivoting algorithm for surface reconstruction”, 1999. The implementation
+        is also based on the algorithms outlined in Digne, “An Analysis and Implementation
+        of a Parallel Ball Pivoting Algorithm”, 2014. The surface reconstruction is done by
+        rolling a ball with a given radius over the point cloud, whenever the ball touches
+        three points a triangle is created.
+        
+        Args:
+            pcd (PointCloud): PointCloud from which the TriangleMesh surface is reconstructed. Has to contain normals.
+            radii (utility.DoubleVector): The radii of the ball that are used for the surface reconstruction.
+        """
+        ...
+    
+    @classmethod
+    def create_from_point_cloud_poisson(
+        cls,
+        pcd: PointCloud,
+        depth: int = 8,
+        width: int = 0,
+        scale: float = 1.1,
+        linear_fit: bool = False,
+        n_threads: int = -1,
+    ) -> Tuple[TriangleMesh, utility.DoubleVector]:
+        """Function that computes a triangle mesh from a oriented PointCloud pcd.
+        This implements the Screened Poisson Reconstruction proposed in Kazhdan and Hoppe,
+        “Screened Poisson Surface Reconstruction”, 2013. This function uses the original
+        implementation by Kazhdan. See https://github.com/mkazhdan/PoissonRecon
+
+        Args:
+            pcd (PointCloud):  PointCloud from which the TriangleMesh surface is reconstructed. Has to contain normals.
+            depth (int, optional, default=8): Maximum depth of the tree that will be used for surface
+                reconstruction. Running at depth d corresponds to solving on a grid whose resolution
+                is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree
+                to the sampling density, the specified reconstruction depth is only an upper bound.
+            width (int, optional, default=0): Specifies the target width of the finest level octree cells.
+                This parameter is ignored if depth is specified
+            scale (float, optional, default=1.1): Specifies the ratio between the diameter of the cube
+                used for reconstruction and the diameter of the samples' bounding cube.
+            linear_fit (bool, optional, default=False): If true, the reconstructor will use linear
+                interpolation to estimate the positions of iso-vertices.
+            n_threads (int, optional, default=-1):  Number of threads used for reconstruction.
+                Set to -1 to automatically determine it.
+        Returns:
+            Tuple[TriangleMesh, utility.DoubleVector]: The reconstructed surface and the confidence values
+                for each vertex.
+        """
+        ...
+
+    @classmethod
+    def create_icosahedron(
+        cls,
+        radius: float = 1.0,
+        create_uv_map: bool = False,
+    ) -> TriangleMesh:
+        """Factory function to create a icosahedron.
+        The centroid of the mesh will be placed at (0, 0, 0) and the vertices
+        have a distance of radius to the center.
+
+        Args:
+            radius (float, optional, default=1.0): Distance from centroid to mesh vetices.
+            create_uv_map (bool, optional, default=False): Add default uv map to the mesh.
+        Returns:
+            TriangleMesh: Icosahedron.
+        """
+        ...
+
+    @classmethod
+    def create_mobius(
+        cls,
+        length_split: int = 70,
+        width_split: int = 15,
+        twists: int = 1,
+        raidus: float = 1,
+        flatness: float = 1,
+        width: float = 1,
+        scale: float = 1,
+    ) -> TriangleMesh:
+        """Factory function to create a Mobius strip.
+
+        Args:
+            length_split (int, optional, default=70): The number of segments along the Mobius strip.
+            width_split (int, optional, default=15): The number of segments along the width of the Mobius strip.
+            twists (int, optional, default=1): Number of twists of the Mobius strip.
+            raidus (float, optional, default=1):
+            flatness (float, optional, default=1): Controls the flatness/height of the Mobius strip.
+            width (float, optional, default=1): Width of the Mobius strip.
+            scale (float, optional, default=1): Scale the complete Mobius strip.
+        Returns:
+            TriangleMesh: Mobius strip.
+        """
+        ...
+
+    @classmethod
+    def create_octahedron(
+        cls,
+        radius: float = 1.0,
+        create_uv_map: bool = False,
+    ) -> TriangleMesh:
+        """Factory function to create a octahedron.
+        The centroid of the mesh will be placed at (0, 0, 0) and the vertices
+        have a distance of radius to the center.
+
+        Args:
+            radius (float, optional, default=1.0): Distance from centroid to mesh vertices.
+            create_uv_map (bool, optional, default=False): Add default uv map to the mesh.
+        Returns:
+            TriangleMesh: Octahedron.
+        """
+        ...
+
+    @classmethod
+    def create_sphere(
+        cls,
+        radius: float = 1.0,
+        resolution: int = 20,
+        create_uv_map: bool = False,
+    ) -> TriangleMesh:
+        """Factory function to create a sphere mesh centered at (0, 0, 0).
+
+        Args:
+            radius (float, optional, default=1.0): The radius of the sphere.
+            resolution (int, optional, default=20): The resolution of the sphere. The longitudes will be
+                split into `resolution` segments (i.e. there are `resolution + 1` latitude lines including
+                the north and south pole). The latitudes will be split into `2 * resolution` segments
+                (i.e. there are `2 * resolution` longitude lines.)
+            create_uv_map (bool, optional, default=False): Add default uv map to the mesh.
+        Returns:
+            TriangleMesh: Sphere.
+        """
+        ...
+
+    @classmethod
+    def create_tetrahedron(
+        cls,
+        radius: float = 1.0,
+        create_uv_map: bool = False,
+    ) -> TriangleMesh:
+        """Factory function to create a tetrahedron.
+        The centroid of the mesh will be placed at (0, 0, 0) and the vertices
+        have a distance of radius to the center.
+
+        Args:
+            radius (float, optional, default=1.0): Distance from centroid to mesh vertices.
+            create_uv_map (bool, optional, default=False): Add default uv map to the mesh.
+        Returns:
+            TriangleMesh: Tetrahedron.
+        """
+        ...
+    
+    @classmethod
+    def create_torus(
+        cls,
+        torus_radius: float = 1.0,
+        tube_radius: float = 0.5,
+        radial_resolution: int = 30,
+        tubular_resolution: int = 20,
+    ) -> TriangleMesh:
+        """Factory function to create a torus mesh.
+
+        Args:
+            torus_radius (float, optional, default=1.0): The radius from the center of the torus to the center of the tube.
+            tube_radius (float, optional, default=0.5): The radius of the torus tube.
+            radial_resolution (int, optional, default=30): The number of segments along the radial direction.
+            tubular_resolution (int, optional, default=20): The number of segments along the tubular direction.
+        Returns:
+            TriangleMesh: Torus.
+        """
+        ...
+
+    @overload
+    def crop(
+        self,
+        bounding_box: AxisAlignedBoundingBox,
+    ) -> TriangleMesh:
+        """Function to crop input TriangleMesh into output TriangleMesh
+        
+        Args:
+            bounding_box (AxisAlignedBoundingBox): AxisAlignedBoundingBox to crop points
+        Returns:
+            TriangleMesh: Cropped mesh.
+        """
+        ...
+
+    @overload
+    def crop(
+        self,
+        bounding_box: OrientedBoundingBox,
+    ) -> TriangleMesh:
+        """Function to crop input TriangleMesh into output TriangleMesh
+        
+        Args:
+            bounding_box (OrientedBoundingBox): OrientedBoundingBox to crop points
+        Returns:
+            TriangleMesh: Cropped mesh.
+        """
+        ...
+
+    def deform_as_rigid_as_possible(
+        self,
+        constraint_vertex_indices: utility.IntVector,
+        constraint_vertex_positions: utility.Vector3dVector,
+        max_iter: int,
+        energy: DeformAsRigidAsPossibleEnergy = DeformAsRigidAsPossibleEnergy.Spokes,
+        smoothed_alpha: float = 0.01,
+    ) -> TriangleMesh:
+        """This function deforms the mesh using the method by Sorkine and Alexa, 'As-Rigid-As-Possible Surface Modeling', 2007
+        
+        Args:
+            constraint_vertex_indices (utility.IntVector): Indices of the triangle vertices
+                that should be constrained by the vertex positions in constraint_vertex_positions.
+            constraint_vertex_positions (utility.Vector3dVector): Vertex positions used for the constraints.
+            max_iter (int): Maximum number of iterations to minimize energy functional.
+            energy (DeformAsRigidAsPossibleEnergy, optional, default=DeformAsRigidAsPossibleEnergy.Spokes):
+                Energy model that is minimized in the deformation process
+            smoothed_alpha (float, optional, default=0.01): trade-off parameter for the smoothed energy
+                functional for the regularization term.
+        Returns:
+            TriangleMesh: Deformed mesh.
+        """
+        ...
+
+    def euler_poincare_characteristic(self) -> int:
+        """Function that computes the Euler-Poincaré characteristic,
+        i.e., V + F - E, where V is the number of vertices, F is the number
+        of triangles, and E is the number of edges.
+        
+        Returns:
+            int: Euler-Poincare characteristic.
+        """
+        ...
+
+    def filter_sharpen(
+        self,
+        number_of_iterations: int = 1,
+        strength: float = 1,
+        filter_scope: FilterScope = FilterScope.All,
+    ) -> TriangleMesh:
+        """Function to sharpen triangle mesh. The output value (V_0)
+        is the input value (V_i) plus strength times the input value
+        minus he sum of he adjacent values. 
+        
+        Args:
+            number_of_iterations (int, optional, default=1): Number of repetitions of this operation
+            strength (float, optional, default=1): Filter parameter.
+            filter_scope (FilterScope, optional, default=FilterScope.All): 
+        Returns:
+            TriangleMesh: Sharpened mesh.
+        """
+        ...
+
+    def filter_smooth_laplacian(
+        self,
+        number_of_iterations: int = 1,
+        lambda_filter: float = 0.5,
+        filter_scope: FilterScope = FilterScope.All,
+    ) -> TriangleMesh:
+        """Function to smooth triangle mesh using Laplacian.
+
+        Args:
+            number_of_iterations (int, optional, default=1): Number of repetitions of this operation
+            lambda_filter (float, optional, default=0.5): Filter parameter.
+            filter_scope (FilterScope, optional, default=FilterScope.All):
+        Returns:
+            TriangleMesh: Smoothed mesh.
+        """
+        ...
+
+    def filter_smooth_simple(
+        self,
+        number_of_iterations: int = 1,
+        filter_scope: FilterScope = FilterScope.All,
+    ) -> TriangleMesh:
+        """Function to smooth triangle mesh with simple neighbour average.
+
+        Args:
+            number_of_iterations (int, optional, default=1): Number of repetitions of this operation
+            filter_scope (FilterScope, optional, default=FilterScope.All):
+        Returns:
+            TriangleMesh: Smoothed mesh.
+        """
+        ...
+
+    def filter_smooth_taubin(
+        self,
+        number_of_iterations: int = 1,
+        lambda_filter: float = 0.5,
+        mu: float = -0.53,
+        filter_scope: FilterScope = FilterScope.All,
+    ) -> TriangleMesh:
+        """Function to smooth triangle mesh using method of Taubin, “Curve and Surface
+        Smoothing Without Shrinkage”, 1995. Applies in each iteration two times
+        filter_smooth_laplacian, first with filter parameter lambda_filter and
+        second with filter parameter mu as smoothing parameter.
+        This method avoids shrinkage of the triangle mesh.
+
+        Args:
+            number_of_iterations (int, optional, default=1): Number of repetitions of this operation
+            lambda_filter (float, optional, default=0.5): Filter parameter.
+            mu (float, optional, default=-0.53): Filter parameter.
+            filter_scope (FilterScope, optional, default=FilterScope.All):
+        Returns:
+            TriangleMesh: Smoothed mesh.
+        """
+        ...
+
+    def get_non_manifold_edges(
+        self,
+        allow_boundary_edges: bool = True
+    ) -> utility.Vector2iVector:
+        """Get list of non-manifold edges.
+        
+        Args:
+            allow_boundary_edges (bool, optional, default=True): If true, than non-manifold edges are defined
+                as edges with more than two adjacent triangles, otherwise each edge that is not adjacent to
+                two triangles is defined as non-manifold.
+        Returns:
+            utility.Vector2iVector: Non-manifold edges.
+        """
+        ...
+
+    def get_non_manifold_vertices(self) -> utility.IntVector:
+        """Returns a list of indices to non-manifold vertices.
+        
+        Returns:
+            utility.IntVector: Non-manifold vertices.
+        """
+        ...
+
+    def get_self_intersecting_triangles(self) -> utility.Vector2iVector:
+        """Returns a list of indices to triangles that intersect the mesh.
+        
+        Returns:
+            utility.Vector2iVector: Self-intersecting triangles.
+        """
+        ...
+
+    def get_surface_area(self) -> float:
+        """Function that computes the surface area of the mesh, i.e. the sum 
+        of the individual triangle surfaces.
+        
+        Returns:
+            float: Surface area.
+        """
+        ...
+
+    def get_volume(self) -> float:
+        """Function that computes the volume of the mesh, under the condition
+        that it is watertight and orientable.
+        
+        Returns:
+            float: Volume.
+        """
+        ...
+
     def has_adjacency_list(self) -> bool: ...
     def has_textures(self) -> bool: ...
     def has_triangle_material_ids(self) -> bool: ...
@@ -428,7 +874,223 @@ class TriangleMesh(MeshBase):
     def is_self_intersecting(self) -> bool: ...
     def is_vertex_manifold(self) -> bool: ...
     def is_watertight(self) -> bool: ...
+
+    def merge_close_vertices(self, eps: float) -> TriangleMesh:
+        """Function that will merge close by vertices to a single one. The vertex position,
+        normal and color will be the average of the vertices. The parameter eps defines the
+        maximum distance of close vertices. This function might help to close triangle soups.
+        
+        Args:
+            eps (float): Parameter that defines the distance between close vertices.
+        Returns:
+            TriangleMesh: Merged mesh.
+        """
+        ...
+
+    def orient_triangles(self) -> bool:
+        """If the mesh is orientable this function orients all triangles such that all normals
+        point towards the same direction.
+        
+        Returns:
+            bool: True if the mesh is orientable.
+        """
+        ...
+
     def paint_uniform_color(self, arg0: ArrayLike) -> TriangleMesh: ...
+
+    def remove_degenerate_triangles(self) -> TriangleMesh:
+        """Function that removes degenerate triangles, i.e., triangles that references a single
+        vertex multiple times in a single triangle. They are usually the product of removing
+        duplicated vertices.
+        
+        Returns:
+            TriangleMesh: Mesh without degenerate triangles.
+        """
+        ...
+    
+    def remove_duplicated_triangles(self) -> TriangleMesh:
+        """Function that removes duplicated triangles, i.e., removes triangles that reference the same
+        three vertices and have the same orientation.
+        
+        Returns:
+            TriangleMesh: Mesh without duplicated triangles.
+        """
+        ...
+
+    def remove_duplicated_vertices(self) -> TriangleMesh:
+        """Function that removes duplicated vertices, i.e., vertices that have identical coordinates.
+        
+        Returns:
+            TriangleMesh: Mesh without duplicated vertices.
+        """
+        ...
+
+    def remove_non_manifold_edges(self) -> TriangleMesh:
+        """Function that removes all non-manifold edges, by successively deleting triangles with the
+        smallest surface area adjacent to the non-manifold edge until the number of adjacent triangles
+        to the edge is <= 2.
+        
+        Returns:
+            TriangleMesh: Mesh without non-manifold edges.
+        """
+        ...
+
+    def remove_triangles_by_index(self, triangle_indices: list[int]) -> None:
+        """Function that removes the triangles with index in triangle_indices. Call
+        remove_unreferenced_vertices to clean up vertices afterwards.
+        
+        Args:
+            triangle_indices (list[int]): 1D array of triangle indices that should
+                be removed from the TriangleMesh.
+        """
+        ...
+
+    def remove_triangles_by_mask(self, triangle_mask: list[bool]) -> None:
+        """Function that removes the triangles where triangle_mask is set to true. Call
+        remove_unreferenced_vertices to clean up vertices afterwards.
+        
+        Args:
+            triangle_mask (list[bool]): 1D bool array, True values indicate triangles
+                that should be removed.
+        """
+        ...
+
+    def remove_unreferenced_vertices(self) -> TriangleMesh:
+        """Function that removes vertices from the triangle mesh that are not referenced
+        in any triangle of the mesh.
+        
+        Returns:
+            TriangleMesh: Mesh without unreferenced vertices.
+        """
+        ...
+    
+    def remove_vertices_by_index(self, vertex_indices: list[int]) -> None:
+        """Function that removes the vertices with index in vertex_indices. Note that also all
+        triangles associated with the vertices are removed.
+        
+        Args:
+            vertex_indices (list[int]): 1D array of vertex indices that should be removed from the TriangleMesh.
+        """
+        ...
+
+    def remove_vertices_by_mask(self, vertex_mask: list[bool]) -> None:
+        """Function that removes the vertices that are masked in vertex_mask. Note that also all
+        triangles associated with the vertices are removed.
+        
+        Args:
+            vertex_mask (list[bool]): 1D bool array, True values indicate vertices that should be removed.
+        """
+        ...
+
+    def sample_points_poisson_disk(
+        self,
+        number_of_points: int,
+        init_factor: float = 5,
+        pcl: PointCloud = None,
+        use_triangle_normal: bool = False,
+    ) -> PointCloud:
+        """Function to sample points from the mesh, where each point has approximately the same distance
+        to the neighbouring points (blue noise). Method is based on Yuksel, “Sample Elimination for Generating
+        Poisson Disk Sample Sets”, EUROGRAPHICS, 2015.
+        
+        Args:
+            number_of_points (int): Number of points that should be sampled.
+            init_factor (float, optional, default=5): Factor for the initial uniformly sampled PointCloud.
+                This init PointCloud is used for sample elimination.
+            pcl (PointCloud, optional, default=None): Initial PointCloud that is used for sample elimination.
+                If this parameter is provided the init_factor is ignored.
+            use_triangle_normal (bool, optional, default=False): If True assigns the triangle normals instead
+                of the interpolated vertex normals to the returned points. The triangle normals will be computed
+                and added to the mesh if necessary.
+        Returns:
+            PointCloud: Sampled points.
+        """
+        ...
+
+    def sample_points_uniformly(
+        self,
+        number_of_points: int = 100,
+        use_triangle_normal: bool = False,
+    ) -> PointCloud:
+        """Function to uniformly sample points from the mesh.
+        
+        Args:
+            number_of_points (int, optional, default=100): Number of points that should be uniformly sampled.
+            use_triangle_normal (bool, optional, default=False): If True assigns the triangle normals instead
+                of the interpolated vertex normals to the returned points. The triangle normals will be computed
+                and added to the mesh if necessary.
+        Returns:
+            PointCloud: Sampled points.
+        """
+        ...
+
+    def select_by_index(self, indices: list[int], cleanup: bool = True) -> TriangleMesh:
+        """Function to select mesh from input triangle mesh into output triangle mesh.
+        
+        Args:
+            indices (list[int]): Indices of vertices to be selected.
+            cleanup (bool, optional, default=True): If true calls number of mesh cleanup functions to remove
+                unreferenced vertices and degenerate triangles
+        Returns:
+            TriangleMesh: Selected mesh.
+        """
+        ...
+
+    def simplify_quadric_decimation(
+        self,
+        target_number_of_triangles: int,
+        maximum_error: float = sys.float_info.max,
+        boundary_weight: float = 1.0,
+    ) -> TriangleMesh:
+        """Function to simplify mesh using Quadric Error Metric Decimation by Garland and Heckbert
+        
+        Args:
+            target_number_of_triangles (int): The number of triangles that the simplified mesh should have.
+                It is not guaranteed that this number will be reached.
+            maximum_error (float, optional, default=inf): The maximum error where a vertex is allowed to be merged
+            boundary_weight (float, optional, default=1.0): A weight applied to edge vertices used to preserve boundaries
+        Returns:
+            TriangleMesh: Simplified mesh.
+        """
+        ...
+
+    def simplify_vertex_clustering(
+        self, voxel_size: float, contraction: SimplificationContraction = SimplificationContraction.Average
+    ) -> TriangleMesh:
+        """Function to simplify mesh using vertex clustering.
+        
+        Args:
+            voxel_size (float): The size of the voxel within vertices are pooled.
+
+            contraction (SimplificationContraction, optional, default=SimplificationContraction.Average):
+                Method to aggregate vertex information. Average computes a simple average, Quadric minimizes
+                the distance to the adjacent planes.
+        Returns:
+            TriangleMesh: Simplified mesh.
+        """
+        ...
+
+    def subdivide_loop(self, number_of_iterations: int = 1) -> TriangleMesh:
+        """Function subdivide mesh using Loop's algorithm. Loop, “Smooth subdivision surfaces based on triangles”, 1987.
+        
+        Args:
+            number_of_iterations (int, optional, default=1): Number of iterations. A single iteration splits
+                each triangle into four triangles.
+        Returns:
+            TriangleMesh: Subdivided mesh.
+        """
+        ...
+
+    def subdivide_midpoint(self, number_of_iterations: int = 1) -> TriangleMesh:
+        """Function subdivide mesh using midpoint algorithm.
+        
+        Args:
+            number_of_iterations (int, optional, default=1): Number of iterations. A single iteration splits
+                each triangle into four triangles that cover the same surface.
+        Returns:
+            TriangleMesh: Subdivided mesh.
+        """
+        ...
 
 class TetraMesh(MeshBase):
     tetras: ArrayLike
