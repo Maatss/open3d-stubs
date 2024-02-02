@@ -85,9 +85,27 @@ class Geometry3D(Geometry):
 
 class PointCloud(Geometry3D):
     colors: utility.Vector3dVector
+    covariances: utility.Vector3dVector
+    """Points covariances.
+    Type: float64 array of shape (num_points, 3, 3), use numpy.asarray() to access data"""
     normals: utility.Vector3dVector
     points: utility.Vector3dVector
-    def __init__(self, *args, **kwargs): ...
+    
+    @overload
+    def __init__(self) -> None:
+        """Default constructor."""
+        ...
+    
+    @overload
+    def __init__(self, other: PointCloud) -> None:
+        """Copy constructor."""
+        ...
+
+    @overload
+    def __init__(self, points: utility.Vector3dVector) -> None:
+        """Create a point cloud from points."""
+        ...
+
     def __add__(self, cloud: PointCloud) -> PointCloud: ...
     def __iadd__(self, cloud: PointCloud) -> PointCloud: ...
     def cluster_dbscan(
@@ -125,11 +143,76 @@ class PointCloud(Geometry3D):
         self,
         bounding_box: AxisAlignedBoundingBox | OrientedBoundingBox,
     ) -> PointCloud: ...
+
+    def detect_planar_patches(
+        self,
+        normal_variance_threshold_deg: float = 60,
+        coplanarity_deg: float = 75,
+        outlier_ratio: float = 0.75,
+        min_plane_edge_length: float = 0.0,
+        min_num_points: int = 0,
+        search_param: KDTreeSearchParam = KDTreeSearchParamKNN(),
+    ) -> list[OrientedBoundingBox]:
+        """Detects planar patches in the point cloud using a robust statistics-based approach.
+        
+        Args:
+            normal_variance_threshold_deg (float, optional, default=60):
+            coplanarity_deg (float, optional, default=75):
+            outlier_ratio (float, optional, default=0.75): Maximum allowable ratio of outliers
+                associated to a plane.
+            min_plane_edge_length (float, optional, default=0.0): Minimum edge length of
+                plane's long edge before being rejected.
+            min_num_points (int, optional, default=0): Minimum number of points allowable for
+                fitting planes.
+            search_param (KDTreeSearchParam, optional, default=KDTreeSearchParamKNN with knn = 30):
+                The KDTree search parameters for neighborhood search.
+        Returns:
+            list[OrientedBoundingBox]: Detected planar patches, represented as OrientedBoundingBox objects, with the third column (z) of R indicating the planar patch normal vector. The extent in the z direction is non-zero so that the OrientedBoundingBox contains the points that contribute to the plane detection.
+        """
+        ...
+
+    def estimate_covariances(
+        self,
+        search_param: KDTreeSearchParam = KDTreeSearchParamKNN(),
+    ) -> None:
+        """Function to compute the covariance matrix for each point in the point cloud
+        
+        Args:
+            search_param (KDTreeSearchParam, optional, default=KDTreeSearchParamKNN with knn = 30):
+                The KDTree search parameters for neighborhood search.
+        """
+        ...
+        
     def estimate_normals(
         self,
         search_param: KDTreeSearchParam = KDTreeSearchParamKNN(),
         fast_normal_computation: bool = True,
     ) -> None: ...
+
+    @classmethod
+    def estimate_point_covariances(
+        cls,
+        input: PointCloud,
+        search_param: KDTreeSearchParam = KDTreeSearchParamKNN(),
+    ) -> utility.Matrix3dVector:
+        """Static function to compute the covariance matrix for each point in the given 
+        point cloud, doesn't change the input.
+        
+        Args:
+            input (PointCloud): The input point cloud.
+            search_param (KDTreeSearchParam, optional, default=KDTreeSearchParamKNN with knn = 30):
+                The KDTree search parameters for neighborhood search.
+        Returns:
+            utility.Matrix3dVector: Covariance matrix for each point in the input point cloud.
+        """
+        ...
+
+    def farthest_point_down_sample(self, num_samples: int) -> PointCloud:
+        """Downsamples input pointcloud into output pointcloud with a set of points has
+        farthest distance. The sample is performed by selecting the farthest point from
+        previous selected points iteratively."""
+        ...
+
     def has_colors(self) -> bool: ...
     def has_normals(self) -> bool: ...
     def has_points(self) -> bool: ...
