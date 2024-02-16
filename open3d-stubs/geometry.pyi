@@ -1,6 +1,6 @@
 from enum import Enum
 import sys
-from typing import Callable, Tuple, overload
+from typing import Callable, Optional, Tuple, overload
 
 from numpy import array, float64, int32
 from numpy.typing import ArrayLike, NDArray
@@ -120,25 +120,64 @@ class PointCloud(Geometry3D):
     def compute_point_cloud_distance(
         self, target: PointCloud
     ) -> utility.DoubleVector: ...
-    @classmethod
     def create_from_depth_image(
         cls,
         depth: Image,
-        intrinsic,
-        extrinsic: NDArray[float64],
+        intrinsic: camera.PinholeCameraIntrinsic,
+        extrinsic: Optional[NDArray[float64]],
         depth_scale: float = 1000.0,
         depth_trunc: float = 1000.0,
         stride: int = 1,
         project_valid_depth_only: bool = True,
-    ) -> PointCloud: ...
+    ) -> PointCloud:
+        """Factory function to create a pointcloud from a depth image and a camera.
+        Given depth value d at (u, v) image coordinate, the corresponding 3d point is:
+        
+        z = d / depth_scale
+        
+        x = (u - cx) * z / fx
+        
+        y = (v - cy) * z / fy
+
+        Args:
+            depth (Image): The input depth image can be either a float image, or a uint16_t image.
+            intrinsic (camera.PinholeCameraIntrinsic): Intrinsic parameters of the camera.
+            extrinsic (NDArray[float64], optional): array([[1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 1., 0.], [0., 0., 0., 1.]])
+            depth_scale (float, optional, default=1000.0): The depth is scaled by 1 / depth_scale.
+            depth_trunc (float, optional, default=1000.0): Truncated at depth_trunc distance.
+            stride (int, optional, default=1): Sampling factor to support coarse point cloud extraction.
+            project_valid_depth_only (bool, optional, default=True):
+        Returns:
+            PointCloud: The created point cloud.
+        """
+        ...
+
     @classmethod
     def create_from_rgbd_image(
         cls,
-        iamge: Image,
-        intrinsic,
-        extrinsic: NDArray[float64],
+        image: Image,
+        intrinsic: camera.PinholeCameraIntrinsic,
+        extrinsic: Optional[NDArray[float64]],
         project_valid_depth_only: bool = True,
-    ) -> PointCloud: ...
+    ) -> PointCloud:
+        """Factory function to create a pointcloud from an RGB-D image and a camera.
+        Given depth value d at (u, v) image coordinate, the corresponding 3d point is:
+        
+        z = d / depth_scale
+
+        x = (u - cx) * z / fx
+
+        y = (v - cy) * z / fy
+
+        Args:
+            image (Image): The input image.
+            intrinsic (camera.PinholeCameraIntrinsic): Intrinsic parameters of the camera.
+            extrinsic (NDArray[float64], optional): array([[1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 1., 0.], [0., 0., 0., 1.]])
+            project_valid_depth_only (bool, optional, default=True):
+        Returns:
+            PointCloud: The created point cloud.
+        """
+        ...
     def crop(
         self,
         bounding_box: AxisAlignedBoundingBox | OrientedBoundingBox,
