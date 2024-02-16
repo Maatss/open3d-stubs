@@ -1,10 +1,9 @@
-
-import enum
+from __future__ import annotations
+from enum import Enum
 from typing import Any, overload
 
 import open3d
-from open3d.core import Dtype
-
+from open3d import core
 
 class DepthNoiseSimulator:
     """Simulate depth image noise from a given noise distortion model.
@@ -20,10 +19,10 @@ class DepthNoiseSimulator:
                 See http://redwood-data.org/indoor/dataset.html for the format.
                 Or, you may use one of our example datasets, e.g., RedwoodIndoorLivingRoom1.
         """
-    
+
     def enable_deterministic_debug_mode(self) -> None:
         """Enable deterministic debug mode. All normally distributed noise will be replaced by 0."""
-    
+
     def simulate(
             self,
             im_src: open3d.t.geometry.Image,
@@ -44,18 +43,18 @@ class DepthNoiseSimulator:
 
 class RGBDSensor:
     """Interface class for control of RGBD cameras."""
-    def __init__(*args, **kwargs) -> None: ...
+    def __init__(self, *args, **kwargs) -> None: ...
 
 class RGBDVideoMetadata:
     """RGBD Video metadata."""
 
     color_channels: int
     """Number of color channels."""
-    color_dt: Dtype
+    color_dt: core.Dtype
     """Pixel Dtype for color data."""
     color_format: str
     """Pixel format for color data"""
-    depth_dt: Dtype
+    depth_dt: core.Dtype
     """Pixel Dtype for depth data."""
     depth_format: str
     """Pixel format for depth data"""
@@ -93,8 +92,8 @@ class RGBDVideoReader:
         Returns:
             RGBDVideoReader: RGBDVideoReader object.
         """
-        return RGBDVideoReader()
-    
+        ...
+
     def save_frames(
         self,
         frame_path: str,
@@ -330,7 +329,7 @@ class RealSenseSensor:
         """Stop capturing frames."""
         ...
 
-class SensorType(enum):
+class SensorType(Enum):
     """Sensor type"""
     AZURE_KINECT = 0
     REAL_SENSE = 1
