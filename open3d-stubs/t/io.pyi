@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Any, overload
+from typing import Any, Optional, overload
 
 import open3d
 from open3d import core
@@ -279,9 +279,9 @@ class RealSenseSensor:
 
     def init_sensor(
             self,
-            sensor_config: RealSenseSensorConfig,
-            sensor_index: int,
-            filename: str
+            sensor_config: Optional[RealSenseSensorConfig] = None,
+            sensor_index: int = 0,
+            filename: str = ""
     ) -> bool:
         """Configure sensor with custom settings. If this is skipped, default settings will be used. You can enable recording to a bag file by specifying a filename.
 

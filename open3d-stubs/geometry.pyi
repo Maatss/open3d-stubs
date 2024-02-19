@@ -124,7 +124,7 @@ class PointCloud(Geometry3D):
         cls,
         depth: Image,
         intrinsic: camera.PinholeCameraIntrinsic,
-        extrinsic: Optional[NDArray[float64]],
+        extrinsic: Optional[NDArray[float64]] = None,
         depth_scale: float = 1000.0,
         depth_trunc: float = 1000.0,
         stride: int = 1,
@@ -155,9 +155,9 @@ class PointCloud(Geometry3D):
     @classmethod
     def create_from_rgbd_image(
         cls,
-        image: Image,
+        image: RGBDImage,
         intrinsic: camera.PinholeCameraIntrinsic,
-        extrinsic: Optional[NDArray[float64]],
+        extrinsic: Optional[NDArray[float64]] = None,
         project_valid_depth_only: bool = True,
     ) -> PointCloud:
         """Factory function to create a pointcloud from an RGB-D image and a camera.
@@ -170,7 +170,7 @@ class PointCloud(Geometry3D):
         y = (v - cy) * z / fy
 
         Args:
-            image (Image): The input image.
+            image (RGBDImage): The input RGB-D image.
             intrinsic (camera.PinholeCameraIntrinsic): Intrinsic parameters of the camera.
             extrinsic (NDArray[float64], optional): array([[1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 1., 0.], [0., 0., 0., 1.]])
             project_valid_depth_only (bool, optional, default=True):
