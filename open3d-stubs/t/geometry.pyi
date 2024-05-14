@@ -1,7 +1,376 @@
 from enum import Enum
-from typing import Iterable, Iterator, Optional, Sequence, Union, overload
+from math import inf
+from typing import Any, Iterable, Iterator, Optional, Sequence, Union, overload
+from __future__ import annotations
 
 from .. import core, geometry
+
+
+class OrientedBoundingBox:
+    @property
+    def center(self) -> core.Tensor:
+        """Returns the center for box."""
+        ...
+    @property
+    def color(self) -> core.Tensor:
+        """Returns the color for box."""
+        ...
+    @property
+    def device(self) -> core.Device:
+        """Returns the device of the geometry."""
+        ...
+    @property
+    def dtype(self) -> core.Dtype:
+        """Returns the data type attribute of this OrientedBoundingBox."""
+        ...
+    @property
+    def extent(self) -> core.Tensor:
+        """Returns the extent for box coordinates."""
+        ...
+    @property
+    def is_cpu(self) -> bool:
+        """Returns true if the geometry is on CPU."""
+        ...
+    @property
+    def is_cuda(self) -> bool:
+        """Returns true if the geometry is on CUDA."""
+        ...
+    @property
+    def material(self) -> Any: # todo
+        ...
+    @property
+    def rotation(self) -> core.Tensor:
+        """Returns the rotation for box."""
+        ...
+
+    def __init__(self, *args, **kwargs) -> None: ...
+    def clear(self) -> OrientedBoundingBox:
+        """Clear all elements in the geometry."""
+        ...
+    def clone(self) -> OrientedBoundingBox:
+        """Returns copy of the oriented box on the same device."""
+        ...
+    def cpu(self) -> OrientedBoundingBox:
+        """Transfer the oriented box to CPU. If the oriented box is already on CPU, no copy will be performed."""
+        ...
+    @staticmethod
+    def create_from_axis_aligned_bounding_box(aabb: AxisAlignedBoundingBox) -> OrientedBoundingBox:
+        """Create an OrientedBoundingBox from the AxisAlignedBoundingBox.
+        
+        Args:
+            aabb (AxisAlignedBoundingBox): AxisAlignedBoundingBox object from which OrientedBoundingBox is created.
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    @staticmethod
+    def create_from_points(points: core.Tensor, robust: bool = False) -> OrientedBoundingBox:
+        """Creates an oriented bounding box using a PCA. Note that this is only an approximation to the minimum oriented bounding box that could be computed for example with O’Rourke’s algorithm (cf. http://cs.smith.edu/~jorourke/Papers/MinVolBox.pdf, https://www.geometrictools.com/Documentation/MinimumVolumeBox.pdf) This is a wrapper for a CPU implementation.
+        
+        Args:
+            points (core.Tensor): A list of points with data type of float32 or float64 (N x 3 tensor, where N must be larger than 3).
+            robust (bool, optional): If set to true uses a more robust method which works in degenerate cases but introduces noise to the points coordinates. Defaults to False.
+
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    def cuda(self, device_id: int = 0) -> OrientedBoundingBox:
+        """Transfer the oriented box to a CUDA device. If the oriented box is already on the specified CUDA device, no copy will be performed.
+        
+        Args:
+            device_id (int, optional): Defaults to 0.
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    @staticmethod
+    def from_legacy(
+        box: geometry.OrientedBoundingBox,
+        dtype: core.Dtype = core.Dtype.Float32,
+        device: core.Device = core.Device("CPU:0"),
+    ) -> OrientedBoundingBox:
+        """Create an OrientedBoundingBox from a legacy Open3D oriented box.
+        
+        Args:
+            box (geometry.OrientedBoundingBox):
+            dtype (core.Dtype, optional): Defaults to core.Dtype.Float32.
+            device (core.Device, optional): Defaults to core.Device("CPU:0").
+            
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    def get_axis_aligned_bounding_box(self) -> AxisAlignedBoundingBox:
+        """Returns an oriented bounding box from the AxisAlignedBoundingBox."""
+        ...
+    def get_box_points(self) -> core.Tensor:
+        """Returns the eight points that define the bounding box. The Return tensor has shape {8, 3} and data type same as the box."""
+        ...
+    def get_max_bound(self) -> core.Tensor:
+        """Returns the max bound for box."""
+        ...
+    def get_min_bound(self) -> core.Tensor:
+        """Returns the min bound for box."""
+        ...
+    def get_point_indices_within_bounding_box(points: core.Tensor) -> core.Tensor:
+        """Indices to points that are within the bounding box.
+        
+        Args:
+            points (core.Tensor): Tensor with {N, 3} shape, and type float32 or float64.
+            
+        Returns:
+            core.Tensor"""
+        ...
+    def has_valid_material(self) -> bool:
+        """Returns true if the geometry's material is valid."""
+        ...
+    def is_empty(self) -> bool:
+        """Returns True iff the geometry is empty."""
+        ...
+    def rotate(self, rotation: core.Tensor, center: Optional[core.Tensor] = None) -> OrientedBoundingBox:
+        """Rotate the oriented box by the given rotation matrix. If the rotation matrix is not orthogonal, the rotation will no be applied. The rotation center will be the box center if it is not specified.
+        
+        Args:
+            rotation (core.Tensor): Rotation matrix of shape {3, 3}, type float32 or float64, device same as the box.
+            center (Optional[core.Tensor], optional): Center of the rotation, default is null, which means use center of the box as rotation center.
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    def scale(self, scale: float, center: Optional[core.Tensor] = None) -> OrientedBoundingBox:
+        """Scale the axis-aligned box. If f$mif$ is the min_bound and f$maf$ is the max_bound of the axis aligned bounding box, and f$sf$ and f$cf$ are the provided scaling factor and center respectively, then the new min_bound and max_bound are given by f$mi = c + s (mi - c)f$ and f$ma = c + s (ma - c)f$. The scaling center will be the box center if it is not specified.
+        
+        Args:
+            scale (float): The scale parameter.
+            center (Optional[core.Tensor], optional): Center used for the scaling operation. Tensor with {3,} shape, and type float32 or float64
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    def set_center(self, center: core.Tensor) -> None:
+        """Set the center of the box.
+        
+        Args:
+            center (core.Tensor): Tensor with {3,} shape, and type float32 or float64."""
+        ...
+    def set_color(self, color: core.Tensor) -> None:
+        """Set the color of the oriented box.
+        
+        Args:
+            color (core.Tensor): Tensor with {3,} shape, and type float32 or float64, with values in range [0.0, 1.0]."""
+        ...
+    def set_extent(self, extent: core.Tensor) -> None:
+        """Set the extent of the box.
+        
+        Args:
+            extent (core.Tensor): Tensor with {3,} shape, and type float32 or float64."""
+        ...
+    def set_rotation(self, rotation: core.Tensor) -> None:
+        """Set the rotation matrix of the box.
+        
+        Args:
+            rotation (core.Tensor): Tensor with {3, 3} shape, and type float32 or float64."""
+        ...
+    def to(self, device: core.Device, copy: bool = False) -> OrientedBoundingBox:
+        """Transfer the oriented box to a specified device.
+        
+        Args:
+            device (core.Device):
+            copy (bool, optional): Defaults to False.
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    def to_legacy(self) -> geometry.OrientedBoundingBox: ...
+    def transform(self, transformation: core.Tensor) -> OrientedBoundingBox:
+        """Transform the oriented box by the given transformation matrix.
+        
+        Args:
+            transformation (core.Tensor): Transformation matrix of shape {4, 4}, type float32 or float64, device same as the box.
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+    def translate(self, translation: core.Tensor, relative: bool = True) -> OrientedBoundingBox:
+        """Translate the oriented box by the given translation. If relative is true, the translation is added to the center of the box. If false, the center will be assigned to the translation.
+        
+        Args:
+            translation (core.Tensor): Translation tensor of shape {3,}, type float32 or float64, device same as the box.
+            relative (bool, optional): Whether to perform relative translation. Defaults to True.
+        
+        Returns:
+            OrientedBoundingBox"""
+        ...
+
+class AxisAlignedBoundingBox:
+    @property
+    def color(self) -> core.Tensor:
+        """Returns the color for box."""
+        ...
+    @property
+    def device(self) -> core.Device:
+        """Returns the device of the geometry."""
+        ...
+    @property
+    def dtype(self) -> core.Dtype:
+        """Returns the data type attribute of this AxisAlignedBoundingBox."""
+        ...
+    @property
+    def is_cpu(self) -> bool:
+        """Returns true if the geometry is on CPU."""
+        ...
+    @property
+    def is_cuda(self) -> bool:
+        """Returns true if the geometry is on CUDA."""
+        ...
+    @property
+    def material(self) -> Any: # todo
+        ...
+    @property
+    def max_bound(self) -> core.Tensor:
+        """Returns the max bound for box coordinates."""
+        ...
+    @property
+    def min_bound(self) -> core.Tensor:
+        """Returns the min bound for box coordinates."""
+        ...
+
+    def __init__(self, *args, **kwargs) -> None: ...
+    def clear(self) -> AxisAlignedBoundingBox:
+        """Clear all elements in the geometry."""
+        ...
+    def clone(self) -> AxisAlignedBoundingBox:
+        """Returns copy of the axis-aligned box on the same device."""
+        ...
+    def cpu(self) -> AxisAlignedBoundingBox:
+        """Transfer the axis-aligned box to CPU. If the axis-aligned box is already on CPU, no copy will be performed."""
+        ...
+    def create_from_points(points: core.Tensor) -> AxisAlignedBoundingBox:
+        """Creates the axis-aligned box that encloses the set of points.
+        
+        Args:
+            points (core.Tensor): A list of points with data type of float32 or float64 (N x 3 tensor).
+            
+        Returns:
+            AxisAlignedBoundingBox"""
+        ...
+    def cuda(self, device_id: int = 0) -> AxisAlignedBoundingBox:
+        """Transfer the axis-aligned box to a CUDA device. If the axis-aligned box is already on the specified CUDA device, no copy will be performed.
+        
+        Args:
+            device_id (int, optional): Defaults to 0.
+        
+        Returns:
+            AxisAlignedBoundingBox"""
+        ...
+    @staticmethod
+    def from_legacy(
+        box: geometry.AxisAlignedBoundingBox,
+        dtype: core.Dtype = core.Dtype.Float32,
+        device: core.Device = core.Device("CPU:0"),
+    ) -> AxisAlignedBoundingBox:
+        """Create an AxisAlignedBoundingBox from a legacy Open3D axis-aligned box.
+        
+        Args:
+            box (geometry.AxisAlignedBoundingBox):
+            dtype (core.Dtype, optional): Defaults to core.Dtype.Float32.
+            device (core.Device, optional): Defaults to core.Device("CPU:0").
+            
+        Returns:
+            AxisAlignedBoundingBox"""
+        ...
+    def get_box_points(self) -> core.Tensor:
+        """Returns the eight points that define the bounding box. The Return tensor has shape {8, 3} and data type of float32."""
+        ...
+    def get_center(self) -> core.Tensor:
+        """Returns the center for box coordinates."""
+        ...
+    def get_extent(self) -> core.Tensor:
+        """Get the extent/length of the bounding box in x, y, and z dimension."""
+        ...
+    def get_half_extent(self) -> core.Tensor:
+        """Returns the half extent of the bounding box."""
+        ...
+    def get_max_extent(self) -> float:
+        """Returns the maximum extent, i.e. the maximum of X, Y and Z axis's extents."""
+        ...
+    def get_oriented_bounding_box(self) -> OrientedBoundingBox:
+        """Convert to an oriented box."""
+        ...
+    def get_point_indices_within_bounding_box(points: core.Tensor) -> core.Tensor:
+        """Indices to points that are within the bounding box.
+        
+        Args:
+            points (core.Tensor): Tensor with {N, 3} shape, and type float32 or float64.
+            
+        Returns:
+            core.Tensor"""
+        ...
+    def has_valid_material(self) -> bool:
+        """Returns true if the geometry's material is valid."""
+        ...
+    def is_empty(self) -> bool:
+        """Returns True iff the geometry is empty."""
+        ...
+    def scale(self, scale: float, center: Optional[core.Tensor] = None) -> AxisAlignedBoundingBox:
+        """Scale the axis-aligned box. If f$mif$ is the min_bound and f$maf$ is the max_bound of the axis aligned bounding box, and f$sf$ and f$cf$ are the provided scaling factor and center respectively, then the new min_bound and max_bound are given by f$mi = c + s (mi - c)f$ and f$ma = c + s (ma - c)f$. The scaling center will be the box center if it is not specified.
+        
+        Args:
+            scale (float): The scale parameter.
+            center (Optional[core.Tensor], optional): Center used for the scaling operation. Tensor with {3,} shape, and type float32 or float64
+            
+        Returns:
+            AxisAlignedBoundingBox"""
+        ...
+    def set_color(self, color: core.Tensor) -> None:
+        """Set the color of the axis-aligned box.
+        
+        Args:
+            color (core.Tensor): Tensor with {3,} shape, and type float32 or float64, with values in range [0.0, 1.0]."""
+        ...
+    def set_max_bound(self, max_bound: core.Tensor) -> None:
+        """Set the upper bound of the axis-aligned box.
+        
+        Args:
+            max_bound (core.Tensor): Tensor with {3,} shape, and type float32 or float64."""
+        ...
+    def set_min_bound(self, min_bound: core.Tensor) -> None:
+        """Set the lower bound of the axis-aligned box.
+        
+        Args:
+            min_bound (core.Tensor): Tensor with {3,} shape, and type float32 or float64."""
+        ...
+    def to(self, device: core.Device, copy: bool = False) -> AxisAlignedBoundingBox:
+        """Transfer the axis-aligned box to a specified device.
+        
+        Args:
+            device (core.Device):
+            copy (bool, optional): Defaults to False.
+            
+        Returns:
+            AxisAlignedBoundingBox"""
+        ...
+    def to_legacy(self) -> geometry.AxisAlignedBoundingBox:
+        """Convert to a legacy Open3D axis-aligned box."""
+        ...
+    def translate(self, translation: core.Tensor, relative: bool = True) -> AxisAlignedBoundingBox:
+        """Translate the axis-aligned box by the given translation. If relative is true, the translation is applied to the current min and max bound. If relative is false, the translation is applied to make the box's center at the given translation.
+        
+        Args:
+            translation (core.Tensor): Translation tensor of shape (3,), type float32 or float64, device same as the box.
+            relative (bool, optional): Whether to perform relative translation.
+            
+        Returns:
+            AxisAlignedBoundingBox"""
+        ...
+    def volume(self) -> float:
+        """Returns the volume of the bounding box."""
+        ...
+
+class DrawableGeometry:
+    def __init__(self, *args, **kwargs) -> None: ...
+    def has_valid_material(self) -> bool: ...
+    @property
+    def material(self) -> Any: ...
 
 class Geometry:
     def __init__(self, *args, **kwargs) -> None: ...
@@ -149,6 +518,182 @@ class RGBDImage(Geometry):
     def get_min_bound(self) -> core.Tensor: ...
     def to(self, device: core.Device, copy: bool = False) -> RGBDImage: ...
     def to_legacy(self) -> geometry.RGBDImage: ...
+
+class RaycastingScene:
+    INVALID_ID: int = 4294967295
+
+    def __init__(self, nthreads: int = 0) -> None:
+        """Create a RaycastingScene.
+        
+        Args:
+            nthreads (int, optional): The number of threads to use for building the scene. Set to 0 for automatic."""
+        ...
+    @overload
+    def add_triangles(self, vertex_positions: core.Tensor, triangle_indices: core.Tensor) -> int:
+        """Add a triangle mesh to the scene.
+        
+        Args:
+            vertices (core.Tensor): Vertices as Tensor of dim {N,3} and dtype Float32.
+            triangles (core.Tensor): Triangles as Tensor of dim {M,3} and dtype UInt32.
+        
+        Returns:
+            int: The geometry ID of the added mesh."""
+        ...
+    @overload
+    def add_triangles(self, mesh: TriangleMesh) -> int:
+        """Add a triangle mesh to the scene.
+        
+        Args:
+            mesh (TriangleMesh): A triangle mesh.
+        
+        Returns:
+            int: The geometry ID of the added mesh."""
+        ...
+    def cast_rays(self, rays: core.Tensor, nthreads: int = 0) -> dict[str, core.Tensor]:
+        """Computes the first intersection of the rays with the scene.
+        
+        Args:
+            rays (core.Tensor): A tensor with >=2 dims, shape {.., 6}, and Dtype Float32 describing the rays. {..} can be any number of dimensions, e.g., to organize rays for creating an image the shape can be {height, width, 6}. The last dimension must be 6 and has the format [ox, oy, oz, dx, dy, dz] with [ox,oy,oz] as the origin and [dx,dy,dz] as the direction. It is not necessary to normalize the direction but the returned hit distance uses the length of the direction vector as unit.
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+        
+        Returns:
+            dict[str, core.Tensor]: A dictionary which contains the following keys
+                t_hit: A tensor with the distance to the first hit. The shape is {..}. If there is no intersection the hit distance is inf.
+                geometry_ids: A tensor with the geometry IDs. The shape is {..}. If there is no intersection the ID is INVALID_ID.
+                primitive_ids: A tensor with the primitive IDs, which corresponds to the triangle index. The shape is {..}. If there is no intersection the ID is INVALID_ID.
+                primitive_uvs: A tensor with the barycentric coordinates of the hit points within the hit triangles. The shape is {.., 2}.
+                primitive_normals: A tensor with the normals of the hit triangles. The shape is {.., 3}."""
+        ...
+    def compute_closest_points(self, query_points: core.Tensor, nthreads: int = 0) -> dict[str, core.Tensor]: 
+        """Computes the closest points on the surfaces of the scene.
+        
+        Args:
+            query_points (core.Tensor): A tensor with >=2 dims, shape {.., 3}, and Dtype Float32 describing the query points. {..} can be any number of dimensions, e.g., to organize the query_point to create a 3D grid the shape can be {depth, height, width, 3}. The last dimension must be 3 and has the format [x, y, z].
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+        
+        Returns:
+            dict[str, core.Tensor]: The returned dictionary contains
+                points: A tensor with the closest surface points. The shape is {..}.
+                geometry_ids: A tensor with the geometry IDs. The shape is {..}.
+                primitive_ids: A tensor with the primitive IDs, which corresponds to the triangle index. The shape is {..}.
+                primitive_uvs: A tensor with the barycentric coordinates of the closest points within the triangles. The shape is {.., 2}.
+                primitive_normals: A tensor with the normals of the closest triangle . The shape is {.., 3}."""
+        ...
+    def compute_distance(self, query_points: core.Tensor, nthreads: int = 0) -> core.Tensor:
+        """Computes the distance to the surface of the scene.
+        
+        Args:
+            query_points (core.Tensor): A tensor with >=2 dims, shape {.., 3}, and Dtype Float32 describing the query points. {..} can be any number of dimensions, e.g., to organize the query points to create a 3D grid the shape can be {depth, height, width, 3}. The last dimension must be 3 and has the format [x, y, z].
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+        
+        Returns:
+            core.Tensor: A tensor with the distances to the surface. The shape is {..}."""
+        ...
+    def compute_occupancy(self, query_points: core.Tensor, nthreads: int = 0, nsamples: int = 1) -> core.Tensor:
+        """Computes the occupancy at the query point positions.
+        
+        This function computes whether the query points are inside or outside. The function assumes that all meshes are watertight and that there are no intersections between meshes, i.e., inside and outside must be well defined. The function determines if a point is inside by counting the intersections of a rays starting at the query points.
+        
+        Args:
+            query_points (core.Tensor): A tensor with >=2 dims, shape {.., 3}, and Dtype Float32 describing the query points. {..} can be any number of dimensions, e.g., to organize the query points to create a 3D grid the shape can be {depth, height, width, 3}. The last dimension must be 3 and has the format [x, y, z].
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+            nsamples (int, optional): The number of rays used for determining the inside. This must be an odd number. The default is 1. Use a higher value if you notice errors in the occupancy values. Errors can occur when rays hit exactly an edge or vertex in the scene.
+        
+        Returns:
+            core.Tensor: A tensor with the occupancy values. The shape is {..}. Values are either 0 or 1. A point is occupied or inside if the value is 1."""
+        ...
+    def compute_signed_distance(self, query_points: core.Tensor, nthreads: int = 0, nsamples: int = 1) -> core.Tensor:
+        """Computes the signed distance to the surface of the scene.
+        
+        This function computes the signed distance to the meshes in the scene. The function assumes that all meshes are watertight and that there are no intersections between meshes, i.e., inside and outside must be well defined. The function determines the sign of the distance by counting the intersections of a rays starting at the query points.
+        
+        Args:
+            query_points (core.Tensor): A tensor with >=2 dims, shape {.., 3}, and Dtype Float32 describing the query_points. {..} can be any number of dimensions, e.g., to organize the query points to create a 3D grid the shape can be {depth, height, width, 3}. The last dimension must be 3 and has the format [x, y, z].
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+            nsamples (int, optional): The number of rays used for determining the inside. This must be an odd number. The default is 1. Use a higher value if you notice sign flipping, which can occur when rays hit exactly an edge or vertex in the scene.
+        
+        Returns:
+            core.Tensor: A tensor with the signed distances to the surface. The shape is {..}. Negative distances mean a point is inside a closed surface."""
+        ...
+    def count_intersections(self, rays: core.Tensor, nthreads: int = 0) -> core.Tensor:
+        """Computes the number of intersection of the rays with the scene.
+        
+        Args:
+            rays (core.Tensor): A tensor with >=2 dims, shape {.., 6}, and Dtype Float32 describing the rays. {..} can be any number of dimensions, e.g., to organize rays for creating an image the shape can be {height, width, 6}. The last dimension must be 6 and has the format [ox, oy, oz, dx, dy, dz] with [ox,oy,oz] as the origin and [dx,dy,dz] as the direction. It is not necessary to normalize the direction.
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+        
+        Returns:
+            core.Tensor: A tensor with the number of intersections. The shape is {..}."""
+        ...
+
+    @overload
+    def create_rays_pinhole(
+        intrinsic_matrix: core.Tensor,
+        extrinsic_matrix: core.Tensor,
+        width_px: int,
+        height_px: int,
+    ) -> core.Tensor:
+        """Creates rays for the given camera parameters.
+        
+        Args:
+            intrinsic_matrix (core.Tensor): The upper triangular intrinsic matrix with shape {3,3}.
+            extrinsic_matrix (core.Tensor): The 4x4 world to camera SE(3) transformation matrix.
+            width_px (int): The width of the image in pixels.
+            height_px (int): The height of the image in pixels.
+        
+        Returns:
+            core.Tensor: A tensor of shape {height_px, width_px, 6} with the rays."""
+        ...
+    @overload
+    def create_rays_pinhole(
+        fov_deg: float,
+        center: core.Tensor,
+        eye: core.Tensor,
+        up: core.Tensor,
+        width_px: int,
+        height_px: int,
+    ) -> core.Tensor:
+        """Creates rays for the given camera parameters.
+        
+        Args:
+            fov_deg (float): The horizontal field of view in degree.
+            center (core.Tensor): The point the camera is looking at with shape {3}.
+            eye (core.Tensor): The position of the camera with shape {3}.
+            up (core.Tensor): The up-vector with shape {3}.
+            width_px (int): The width of the image in pixels.
+            height_px (int): The height of the image in pixels.
+        
+        Returns:
+            core.Tensor: A tensor of shape {height_px, width_px, 6} with the rays."""
+        ...
+    def list_intersections(self, rays: core.Tensor, nthreads: int = 0) -> dict[str, core.Tensor]:
+        """Lists the intersections of the rays with the scene.
+        
+        Args:
+            rays (core.Tensor): A tensor with >=2 dims, shape {.., 6}, and Dtype Float32 describing the rays; {..} can be any number of dimensions. The last dimension must be 6 and has the format [ox, oy, oz, dx, dy, dz] with [ox,oy,oz] as the origin and [dx,dy,dz] as the direction. It is not necessary to normalize the direction although it should be normalised if t_hit is to be calculated in coordinate units.
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+        
+        Returns:
+            dict[str, core.Tensor]: The returned dictionary contains
+                ray_splits: A tensor with ray intersection splits. Can be used to iterate over all intersections for each ray. The shape is {num_rays + 1}.
+                ray_ids: A tensor with ray IDs. The shape is {num_intersections}.
+                t_hit: A tensor with the distance to the hit. The shape is {num_intersections}.
+                geometry_ids: A tensor with the geometry IDs. The shape is {num_intersections}.
+                primitive_ids: A tensor with the primitive IDs, which corresponds to the triangle index. The shape is {num_intersections}.
+                primitive_uvs: A tensor with the barycentric coordinates of the intersection points within the triangles. The shape is {num_intersections, 2}."""
+        ...
+    def test_occlusions(self, rays: core.Tensor, tnear: float = 0.0, tfar: float = inf, nthreads: int = 0) -> core.Tensor:
+        """Checks if the rays have any intersection with the scene.
+        
+        Args:
+            rays (core.Tensor): A tensor with >=2 dims, shape {.., 6}, and Dtype Float32 describing the rays. {..} can be any number of dimensions, e.g., to organize rays for creating an image the shape can be {height, width, 6}. The last dimension must be 6 and has the format [ox, oy, oz, dx, dy, dz] with [ox,oy,oz] as the origin and [dx,dy,dz] as the direction. It is not necessary to normalize the direction.
+            tnear (float, optional): The tnear offset for the rays. The default is 0.
+            tfar (float, optional): The tfar value for the ray. The default is infinity.
+            nthreads (int, optional): The number of threads to use. Set to 0 for automatic.
+        
+        Returns:
+            core.Tensor: A boolean tensor which indicates if the ray is occluded by the scene (true) or not (false)."""
+        ...
 
 class SurfaceMaskCode(Enum):
     ColorMap = ...
