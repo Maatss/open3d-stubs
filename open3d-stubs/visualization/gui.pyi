@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Callable, overload
+from typing import Callable, Never, overload
 
 import numpy as np
 
@@ -97,19 +97,19 @@ class Menu:
 class Rect:
     """Represents a widget frame"""
 
-    height: int
-    width: int
     x: int
     y: int
+    height: int
+    width: int
 
     @overload
     def __init__(self) -> None: ...
 
     @overload
-    def __init__(self, arg0: int, arg1: int, arg2: int, arg3: int) -> None: ...
+    def __init__(self, x: int, y: int, width: int, height: int) -> None: ...
     
     @overload
-    def __init__(self, arg0: float, arg1: float, arg2: float, arg3: float) -> None: ...
+    def __init__(self, x: float, y: float, width: float, height: float) -> None: ...
 
     def get_bottom(self) -> int:
         """Returns the bottom of the rect"""
@@ -346,7 +346,7 @@ class KeyName(Enum):
     ZERO = 48
 
 class KeyModifier(Enum):
-    """Key modifier identifiers."""
+    """Key modifier identifiers. Is a bitmask."""
     NONE = 0
     SHIFT = 1
     CTRL = 2
@@ -370,7 +370,7 @@ class KeyEvent:
     def __init__(self, *args, **kwargs) -> None: ...
 
 class MouseButton(Enum):
-    """Mouse button identifiers."""
+    """Mouse button identifiers. Is a bitmask."""
     NONE = 0
     LEFT = 1
     MIDDLE = 2
@@ -388,10 +388,10 @@ class MouseEvent:
         BUTTON_UP: int = 3
         WHEEL: int = 4
 
-    buttons: list[MouseButton]
-    """ORed mouse buttons"""
-    modifiers: list[KeyModifier]
-    """ORed mouse modifiers"""
+    buttons: MouseButton
+    """ORed mouse buttons. Is a bitmask, so multiple buttons can for instance be pressed at once. E.g. LEFT and RIGHT becomes LEFT | RIGHT or integer value 5"""
+    modifiers: KeyModifier
+    """ORed mouse modifiers. Is a bitmask, so multiple buttons can for instance be pressed at once."""
     type: Type
     """Mouse event type"""
     wheel_dx: float
@@ -668,7 +668,7 @@ class Application:
         """
         ...
     
-    def run(self) -> None:
+    def run(self) -> Never:
         """Runs the event loop.
 
         After this finishes, all windows and widgets should be considered
@@ -1190,7 +1190,7 @@ class ImageWidget(Widget):
 
         This callback is passed a MouseEvent object. The callback must return
         EventCallbackResult.IGNORED, EventCallbackResult.HANDLED, or
-        EventCallackResult.CONSUMED.
+        EventCallbackResult.CONSUMED.
         """
         ...
     
@@ -1487,18 +1487,18 @@ class WidgetProxy(Widget):
 
 class WidgetStack(Widget):
     """A widget stack saves all widgets pushed into by push_widget and always shows the top one.
-    The WidgetStack is a subclass of WidgetProxy, in otherwords, the topmost widget will delegate
+    The WidgetStack is a subclass of WidgetProxy, in other words, the topmost widget will delegate
     itself to WidgetStack. pop_widget will remove the topmost widget and callback set by set_on_top
     taking the new topmost widget will be called. The WidgetStack disappears in GUI if there is no
     widget in stack."""
 
     def __init__(self) -> None:
-        """Creates a widget stack. The widget stack without anywidget will not be shown in GUI
+        """Creates a widget stack. The widget stack without any widget will not be shown in GUI
         until set_widget iscalled to push a widget."""
         ...
     
     def pop_widget(self) -> Widget:
-        """pop the topmost widget in the stack. The new topmost widgetof stack will be the
+        """pop the topmost widget in the stack. The new topmost widget of stack will be the
         widget on the show in GUI."""
         ...
 
@@ -1509,7 +1509,7 @@ class WidgetStack(Widget):
 
     def set_on_top(self, callback: Callable[[Widget], None]) -> None:
         """Callable[[widget] -> None], called while a widget becomes the topmost of stack after
-        some widget is poppedout. It won't be called if a widget is pushed into stack by set_widget."""
+        some widget is popped out. It won't be called if a widget is pushed into stack by set_widget."""
         ...
 
     def set_widget(self, widget: Widget) -> None:
@@ -1534,6 +1534,8 @@ class SceneWidget(Widget):
         """Rotate the sun around the center of rotation"""
         ROTATE_IBL: int = 4
         """Rotate the IBL around the center of rotation"""
+        ROTATE_MODEL: int = 5
+        """Rotate the model around the center of rotation"""
         PICK_POINTS: int = 6
         """Pick points"""
 
@@ -1602,7 +1604,7 @@ class SceneWidget(Widget):
         ...
 
     def set_view_controls(self, controls: Controls) -> None:
-        """Sets mouse interaction, e.g. ROTATE_OBJ"""
+        """Sets mouse interaction, e.g. ROTATE_MODEL"""
         ...
 
     @overload

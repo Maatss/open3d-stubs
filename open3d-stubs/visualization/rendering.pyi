@@ -626,7 +626,7 @@ class Open3DScene:
 
     background_color: NDArray[float32]
     """The background color (read-only)."""
-    bounding_box: NDArray[float32]
+    bounding_box: geometry.AxisAlignedBoundingBox
     """The bounding box of all the items in the scene, visible and invisible (read-only)."""
     camera: Camera
     """The camera object (read-only)."""
