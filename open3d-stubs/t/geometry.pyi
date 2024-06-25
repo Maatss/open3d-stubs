@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from .. import core, geometry
 
-
 class OrientedBoundingBox:
     @property
     def center(self) -> core.Tensor:
@@ -544,7 +543,7 @@ class RaycastingScene:
         """Add a triangle mesh to the scene.
         
         Args:
-            mesh (TriangleMesh): A triangle mesh.
+            mesh (o3d.t.geometry.TriangleMesh): A triangle mesh.
         
         Returns:
             int: The geometry ID of the added mesh."""
@@ -627,6 +626,7 @@ class RaycastingScene:
         ...
 
     @overload
+    @staticmethod
     def create_rays_pinhole(
         intrinsic_matrix: core.Tensor,
         extrinsic_matrix: core.Tensor,
@@ -645,6 +645,7 @@ class RaycastingScene:
             core.Tensor: A tensor of shape {height_px, width_px, 6} with the rays."""
         ...
     @overload
+    @staticmethod
     def create_rays_pinhole(
         fov_deg: float,
         center: core.Tensor,
